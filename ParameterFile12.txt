@@ -1,0 +1,17 @@
+MutationRate: 40.0
+DFEType: point
+DFEPointSelectionCoefficient: 0.002000
+DemographicHistory: DemographicHistoryTwoConstantSizes.txt
+h: 0.5
+PrintSNPNumber: 0
+PrintSumOfS: 0
+PrintSumDAF: 0
+PrintWeightedSumOfS: 0
+PrintGenLoad: 0
+PrintFixedSites: 0
+PrintSegSiteInfo: 0
+PrintSampledGenotypes: 0
+PrintSFS: 1
+SFSNoBurnIn: 1
+n: 1000
+FilePrefix: MiniTest/Output

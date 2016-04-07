@@ -1,0 +1,15 @@
+MutationRate: 20
+DFEType: point
+DFEPointSelectionCoefficient: 0.0
+DemographicHistory: Bottleneck.txt
+PrintSNPNumber: 1
+PrintSumOfS: 1
+PrintSumDAF: 1
+PrintWeightedSumOfS: 1
+PrintGenLoad: 1
+PrintFixedSites: 1
+PrintSegSiteInfo: 1
+PrintSampledGenotypes: 1
+PrintSFS: 1
+LastGenerationAFSamplingValue: 1
+FilePrefix: MiniTest/Output
