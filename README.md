@@ -7,7 +7,7 @@ The download folder includes a detailed user manual with download, installation,
 
 Please note that PReFerSim is intended to run on Unix, or Unix-like operating systems, such as Linux or Mac OS X (10.8+). To use PReFerSim with Mac OS X, you must install the Mac OS X software developer kit usually included with Xcode.  The program can also be used in a Windows operating system, but it requires the installation of Cygwin. If you use Cygwin, make sure to install GNU's gcc compiler when downloading or updating Cygwin to be able to compile PReFerSim. In order to run PReFerSim GSL must be installed on your computer (available here: http://www.gnu.org/software/gsl/).
 
-Please see the user manual for instructions on how to compile the program. 
+Please see the user manual (PReFerSim_Manual_v2.pdf) for instructions on how to compile the program. 
 PReFerSim can be then be run with:
 GSL_RNG_SEED=1 GSL_RNG_TYPE=mrg ./PReFerSim ParameterFile1.txt 1
 
@@ -32,6 +32,8 @@ GetListOfRunsWhereFrequencyMatches.pl.-  perl script used to extract list of all
 ParameterFileX.txt.- Variety of example parameter files
 
 PReFerSim.c.- The C code for PReFerSim
+
+PReFerSim_Manual_v2.pdf. - Detailed user manual
 
 SelPointTest.txt.- Example file showing a discrete probability distribution of fitness effects
 
