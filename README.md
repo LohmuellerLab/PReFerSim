@@ -1,7 +1,8 @@
 #PReFerSim
 PReFerSim is an ANSI C program that performs forward simulations under the PRF model. PReFerSim models changes in population size, arbitrary amounts of inbreeding, dominance, and distributions of selective effects. Users can track summaries of genetic variation over time and output trajectories of selected alleles.
 
-A manuscript describing PReFerSim has been submitted.
+If you use PReFerSim please cite:
+Ortega-Del Vecchyo, D., Marsden, C. D. & Lohmueller, K. E. PReFerSim: fast simulation of demography and selection under the Poisson Random Field model. Bioinformatics 32, 3516–3518 (2016).
 
 The download folder includes a detailed user manual with download, installation, usage and troubleshooting instructions along with example files and the program.
 
