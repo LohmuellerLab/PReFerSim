@@ -57,6 +57,9 @@
 int fix = 0;
 int total_mut = 0;
 int count_mut=0;
+double sumtotalfixeds = 0.0;
+int CountTotalReferenceAlleles = 0;
+int CountTotalDerivedAlleles = 0;
 double GammaInIntegrableFunction;
 int jInIntegrableFunction;
 int BurnInPopSizeInIntegrableFunction;
@@ -81,7 +84,7 @@ struct linked_list *add_mutation(struct linked_list *head_ptr, double mut_rate, 
 struct linked_list *add_mutation_BurnIn(struct linked_list *head_ptr, double mut_rate, int N, gsl_rng * r, int age, char *type_sel, double sel_mult, double h , double PointSel, int *ListOfAllelesToKeep, int FlagTrajToPrint, FILE *EXITTRAJFILE , int FlagRelaxationSel, double SelThreshold, double NewSelCoef , double ParamOne, double ParamTwo,  double ParamThree, int TypeRelaxedSelection, double *VecSelParamOne, double *VecSelParamTwo, double *VecSelParamThree, int NumberOfSelPars, double SFSBasedAlleleFrequency);
 
 struct linked_list *drift_sel(struct linked_list *head_ptr, int N, gsl_rng * r, double F, int FlagTrajToPrint, int *ListOfAllelesToKeep, FILE *EXITTRAJFILE, FILE *FIXEDSITESFILE, int ShortFlag , int SampleFlag, int ModuloFixedSitesToPrint, int fixed_sitesFlag);
-void short_output(struct linked_list *head_ptr, FILE *S_OUT, FILE *NUM_SNP_OUT, FILE *WEIGHT_S_OUT,  FILE *MAF_OUT, FILE *GEN_LOAD, FILE *SFS_OUT, FILE *FULL_OUT, int num, int run, int n, gsl_rng * r, int num_snpFlag , int s_outFlag , int average_mafFlag , int s_weightFlag , int genloadFlag, int sfs_outFlag, int full_outFlag, int SampleFlag);
+void short_output(struct linked_list *head_ptr, FILE *S_OUT, FILE *NUM_SNP_OUT, FILE *WEIGHT_S_OUT,  FILE *MAF_OUT, FILE *GEN_LOAD, FILE *SFS_OUT, FILE *POPSFS_OUT, FILE *FULL_OUT, int num, int run, int n, gsl_rng * r, int num_snpFlag , int s_outFlag , int average_mafFlag , int s_weightFlag , int genloadFlag, int sfs_outFlag, int full_outFlag, int SampleFlag, int CurrentNe);
 void full_output(struct linked_list *head_ptr, FILE *FULL_OUT,  int num, int run);
 void dog_output(struct linked_list *head_ptr, FILE *DOG_OUT,  int num, int run, double F, gsl_rng * r);
 void sfs_output(struct linked_list *head_ptr, FILE *SFS_OUT, int num, int run, int n, gsl_rng * r);
@@ -161,7 +164,7 @@ int BurnInPopSizeFlag = 0, SFSBurnInFlag = 0, SFSIntIntervalFlag = 0;
 double *TheoreticalSFS, CurrentTheoreticalSFSValue, FunctionValueToEvaluate, BinomialValue, SFSFunctionTermOne, SFSFunctionTermTwo, InsideSFSTerms;
 int FlagTrajToPrint = 0, NumberOfEpochs = 0, StringPart, StringParPart, NumberOfEpochs_F = 0, FlagRelaxationSelection = 0, TypeOfRelaxedSelection = 0, EpochOfRelaxation = 0, PrintingInterval = 1, DotNumber = 0;
 	int DFEUnifBoundsFlag = 0, DFEPointProbFlag = 0, DFEUnifBoundsNeFlag = 0, EpochOfRelaxationFlag = 0, RelSelCoefFlag = 0, RelSelThresFlag = 0, RelSelTypeFlag = 0, SelMultFlag = 0, FixedFFlag = 0, ChangedFFlag = 0, F_FixedOptionflag = 0, hFlag = 0, nFlag = 0, PrintSNPNumberFlag = 0, ShortOutFreqFlag = 0, PrintSNPOfSFlag = 0, PrintAverageDAFFlag = 0, PrintWeightSumFlag = 0, PrintGenLoadFlag = 0, PrintFixedSitesFlag = 0, PrintSegSiteFlag = 0, PrintSampledGenFlag = 0, PrintSFSFlag = 0, FilePrefixFlag = 0;
-double NewSelectionCoefficient = 0.0, SelectionThreshold = 1.0, ProjectedNumberOfMutations = 0;
+double NewSelectionCoefficient = 0.0, SelectionThreshold = 1.0, ProjectedNumberOfMutations = 0, PrintSFSPastFlag = 0, PrintSFSPresentFlag = 0;
 char *DemographicTrajectory, *TrajLine, *FValuesFileName, *SelParFileName, *ParLine, *SingleCharacter;
 	int j; // counter
 	int TotalRelaxationParameters = 0;
@@ -1815,16 +1818,27 @@ gen = malloc(4*sizeof(int));
 						strncpy(SingleCharacter,ParSubString+j,1);
 						// && strcmp(SingleCharacter,".")!=0
 						if (!isdigit((int) SingleCharacter[0]) ){
-							fprintf(stderr, "\nError: The value %s given in the option PrintSFS is not an integer number equal to 0 or 1 (no dots or commas allowed)\n", ParSubString);
+							fprintf(stderr, "\nError: The value %s given in the option PrintSFS is not an integer number equal to 0, 1 or 2 (no dots or commas allowed)\n", ParSubString);
 							exit(8);
 						}
 					}
-					sfs_outFlag = atoi(ParSubString) ;
-					if (sfs_outFlag != 0 && sfs_outFlag != 1){
-						fprintf(stderr, "\nError: The value %s given in the option PrintSFS is not an integer number equal to 0 or 1 (no dots or commas allowed)\n", ParSubString);
+					sfs_outFlag = atoi(ParSubString);
+
+					if (sfs_outFlag != 0 && sfs_outFlag != 1 && sfs_outFlag != 2){
+						fprintf(stderr, "\nError: The value %s given in the option PrintSFS is not an integer number equal to 0, 1 or 2 (no dots or commas allowed)\n", ParSubString);
 						exit(8);						
 					}
 					printf("%d\n",sfs_outFlag);
+                    if (sfs_outFlag == 0){
+                        PrintSFSPastFlag = 0;
+                        PrintSFSPresentFlag = 0;
+                    }else if (sfs_outFlag == 1){
+                        PrintSFSPastFlag = 0;
+                        PrintSFSPresentFlag = 1;
+                    }else if (sfs_outFlag == 2){
+                        PrintSFSPastFlag = 1;
+                        PrintSFSPresentFlag = 1;
+                    }
 				}
 
 				else if (strcasecmp(ParameterFileArgument,"FilePrefix:") == 0){
@@ -2153,7 +2167,7 @@ char file_out_maf[1000];
 	}
 	
 	//now create sfs output
-	FILE *SFS_OUT;
+	FILE *SFS_OUT, *POPSFS_OUT;
 	if (sfs_outFlag == 1){
 		char file_out_sfs[1000];
 		sprintf(file_out_sfs, "%s.%d.sfs_out.txt",OutputFilePrefix,num);
@@ -2163,6 +2177,13 @@ char file_out_maf[1000];
 			fprintf(stderr, "Error: unable to create output file %s\n",file_out_sfs);
 			exit(8);
 		}
+        sprintf(file_out_sfs, "%s.%d.popsfs_out.txt",OutputFilePrefix,num);
+        POPSFS_OUT = fopen(file_out_sfs, "w"); //output file for sfs stuff
+        if (POPSFS_OUT == NULL)
+        {
+            fprintf(stderr, "Error: unable to create output file %s\n",file_out_sfs);
+            exit(8);
+        }
 	}
 	
 
@@ -2264,14 +2285,14 @@ char file_out_maf[1000];
 		{
 			//means we should do the timed sampling
 			if (age != 0){
-			short_output(first_ptr, S_OUT, NUM_SNP_OUT, WEIGHT_S_OUT,  MAF_OUT, GEN_LOAD, SFS_OUT, FULL_OUT,num, run, n, r,num_snpFlag , s_outFlag , average_mafFlag , s_weightFlag , genloadFlag, 0,0,SampleFlag);
+			short_output(first_ptr, S_OUT, NUM_SNP_OUT, WEIGHT_S_OUT,  MAF_OUT, GEN_LOAD, SFS_OUT, POPSFS_OUT,  FULL_OUT,num, run, n, r,num_snpFlag , s_outFlag , average_mafFlag , s_weightFlag , genloadFlag, PrintSFSPastFlag,0,SampleFlag, N[e]);
 			}
 			}
 		else if(e>0 && (g % PrintingInterval)==0 && Short==1)
 		{
 			//means we should do the timed sampling
 			if (age != 0){
-			short_output(first_ptr, S_OUT, NUM_SNP_OUT, WEIGHT_S_OUT,  MAF_OUT, GEN_LOAD, SFS_OUT, FULL_OUT , num, run, n, r,num_snpFlag , s_outFlag , average_mafFlag , s_weightFlag , genloadFlag, 0,0,SampleFlag);
+			short_output(first_ptr, S_OUT, NUM_SNP_OUT, WEIGHT_S_OUT,  MAF_OUT, GEN_LOAD, SFS_OUT, POPSFS_OUT, FULL_OUT , num, run, n, r,num_snpFlag , s_outFlag , average_mafFlag , s_weightFlag , genloadFlag, PrintSFSPastFlag,0,SampleFlag, N[e]);
 			}
 			}
 		
@@ -2319,7 +2340,7 @@ printf("\nTotal number of mutations = %i\n", count_mut);
  
 	if(Short==1)
 	{ 
-		short_output(first_ptr, S_OUT, NUM_SNP_OUT, WEIGHT_S_OUT,  MAF_OUT, GEN_LOAD, SFS_OUT, FULL_OUT, num, run, n, r,num_snpFlag , s_outFlag , average_mafFlag , s_weightFlag , genloadFlag, sfs_outFlag,full_outFlag,SampleFlag);
+		short_output(first_ptr, S_OUT, NUM_SNP_OUT, WEIGHT_S_OUT,  MAF_OUT, GEN_LOAD, SFS_OUT, POPSFS_OUT, FULL_OUT, num, run, n, r,num_snpFlag , s_outFlag , average_mafFlag , s_weightFlag , genloadFlag, PrintSFSPresentFlag, full_outFlag,SampleFlag, N[ NumberOfEpochs - 1 ]);
  
 	//num_snpFlag = 0, s_outFlag = 0, average_mafFlag = 0, s_weightFlag = 0, genloadFlag = 0, sfs_outFlag = 0, het_outFlag = 0, full_outFlag = 0, fixed_sitesFlag = 0 ; 
 		
@@ -2767,10 +2788,13 @@ ArrayCounter = ArrayCounter + 1;
 			if (ShortFlag == 1){
 			if (freq == 0.0) {
 					ReferenceSitesFixed++;
+                    CountTotalReferenceAlleles++;
 			}
 			if (freq == 1.0) {
 				DerivedSitesFixed++;
+                CountTotalDerivedAlleles++;
 				sumfixeds = sumfixeds + s;
+                sumtotalfixeds = sumtotalfixeds + s;
 			}
 			}
 
@@ -2829,31 +2853,37 @@ struct linked_list *current_ptr;
  
 }
 
-void short_output(struct linked_list *head_ptr, FILE *S_OUT, FILE *NUM_SNP_OUT, FILE *WEIGHT_S_OUT,  FILE *MAF_OUT, FILE *GEN_LOAD, FILE *SFS_OUT, FILE *FULL_OUT, int num, int run, int n, gsl_rng * r, int num_snpFlag , int s_outFlag , int  average_mafFlag , int  s_weightFlag , int  genloadFlag, int  sfs_outFlag, int full_outFlag, int SampleFlag)
+void short_output(struct linked_list *head_ptr, FILE *S_OUT, FILE *NUM_SNP_OUT, FILE *WEIGHT_S_OUT,  FILE *MAF_OUT, FILE *GEN_LOAD, FILE *SFS_OUT, FILE *POPSFS_OUT, FILE *FULL_OUT, int num, int run, int n, gsl_rng * r, int num_snpFlag , int s_outFlag , int  average_mafFlag , int  s_weightFlag , int  genloadFlag, int  sfs_outFlag, int full_outFlag, int SampleFlag, int CurrentNe)
 
 {
 
 	int num_snp_count=0;
-	double sum_s=0;
-	double freq_weight_s=0;
+	double sum_s=0, sum_s_pop = 0, sum_s_pop_fixed = 0;
+	double freq_weight_s=0, freq_weight_s_pop = 0, freq_weight_s_pop_fixed = 0;
 	double c=0;
 	double y=0;
 	double t=0;
-	double total_maf=0;
+	double total_maf=0, total_maf_pop=0, total_maf_pop_fixed=0;
 	int samp_count;
 	double samp_freq;
-	double genloadsum = 0;
+	double genloadsum = 0, genloadsum_pop = 0, genloadsum_pop_fixed = 0;
 	double pop_freq, s, h, s_to_print;
-	int sfs[n];
+	int sfs[n+1], popsfs[CurrentNe+1];
 	int i;
 	int i_use;
 	int age, j , counter, age_to_print;      
 
-	for (i=0; i<n; i++)
+	for (i=0; i<=n; i++)
 	{
 		sfs[i]=0;
 	}
-	
+    for (i=0; i<=CurrentNe; i++)
+    {
+        popsfs[i]=0;
+    }
+    popsfs[0] = CountTotalReferenceAlleles;
+    popsfs[CurrentNe] = CountTotalDerivedAlleles;
+
       struct linked_list *current_ptr;
       current_ptr = head_ptr;
      
@@ -2865,16 +2895,15 @@ void short_output(struct linked_list *head_ptr, FILE *S_OUT, FILE *NUM_SNP_OUT, 
 	  	pop_freq=((*current_ptr).count);
 		samp_count=gsl_ran_binomial(r,pop_freq,n);
 		samp_freq=(double)samp_count/(double)n;
-	if(samp_freq>0 && samp_freq<1.0)
+	if(samp_freq> 0.0 && samp_freq <= 1.0)
 	{  
-		i_use=samp_count-1;
-		sfs[i_use]++;
+		i_use=samp_count;
+        sfs[i_use]++;
 
 		s=((*current_ptr).sel_coef);
 		h=((*current_ptr).h);
 		age=((*current_ptr).age);
 		counter=(*current_ptr).num;
-       		num_snp_count++;
 		sum_s=sum_s+s;
 
 
@@ -2891,37 +2920,78 @@ void short_output(struct linked_list *head_ptr, FILE *S_OUT, FILE *NUM_SNP_OUT, 
 			age_to_print = age + 1;
 			fprintf(FULL_OUT, "%d\t%e\t%e\t%d\t%d\n",num, samp_freq,s_to_print,age_to_print,counter); 
 		}
-	}	 
+	}
+        
+        if(pop_freq > 0.0 && pop_freq <= 1.0)
+        {
+            i_use= (int) ((double)(pop_freq) * (double) (CurrentNe) );
+            popsfs[i_use]++;
+
+            s=((*current_ptr).sel_coef);
+            h=((*current_ptr).h);
+            age=((*current_ptr).age);
+            counter=(*current_ptr).num;
+            sum_s_pop=sum_s_pop+s;
+
+
+            //now, do the sum of the weighted selection coefficients using Kahan summation:
+            y=s*pop_freq-c;
+            t=freq_weight_s_pop+y;
+            c = (t - freq_weight_s_pop) - y;
+            freq_weight_s_pop=t;
+
+            genloadsum_pop = genloadsum_pop + 2*h*s*(pop_freq*(1-pop_freq)) + s*(pop_freq*pop_freq);
+            total_maf_pop=total_maf_pop+pop_freq;
+        }
+        
+        if(samp_freq>0 && samp_freq < 1.0)
+        {
+            num_snp_count++;
+        }
 
 
  current_ptr = current_ptr ->next_ptr;
 	}
-	
+    total_maf_pop_fixed = total_maf_pop + CountTotalDerivedAlleles;
+    sum_s_pop_fixed = sum_s_pop + sumtotalfixeds;
+    genloadsum_pop_fixed = genloadsum_pop + sumtotalfixeds;
 	//loop thorugh all snps, only print out one set of numbers for a particular time pooint
 	genloadsum = 1 - exp(-genloadsum);
+    genloadsum_pop_fixed = 1 - exp(-genloadsum_pop_fixed);
+    freq_weight_s_pop_fixed = freq_weight_s_pop + sumtotalfixeds;
 	
 //	num_snpFlag = 0, s_outFlag = 0, average_mafFlag = 0, s_weightFlag = 0, genloadFlag = 0, sfs_outFlag = 0, het_outFlag = 0, full_outFlag = 0, fixed_sitesFlag = 0 ; 
 	if (s_outFlag==1){
-	fprintf(S_OUT, "%lf\t",sum_s);
+	fprintf(S_OUT, "%lf\t%lf\t%lf\t%lf\n",sum_s, sum_s_pop, sum_s_pop_fixed,sumtotalfixeds);
 	}
 	if(num_snpFlag==1){
-	fprintf(NUM_SNP_OUT, "%d\t",num_snp_count);
+	fprintf(NUM_SNP_OUT, "%d\n",num_snp_count);
 	}
 	if(s_weightFlag==1){
-	fprintf(WEIGHT_S_OUT, "%lf\t",freq_weight_s);
+	fprintf(WEIGHT_S_OUT, "%lf\t%lf\t%lf\n",freq_weight_s, freq_weight_s_pop,freq_weight_s_pop_fixed);
 	}
 	if(average_mafFlag==1){
-	fprintf(MAF_OUT, "%lf\t",total_maf);
+	fprintf(MAF_OUT, "%lf\t%lf\t%lf\n",total_maf, total_maf_pop, total_maf_pop_fixed);
 	}
 	if (genloadFlag==1) {
-	fprintf(GEN_LOAD, "%lf\t",genloadsum);
+	fprintf(GEN_LOAD, "%lf\t%lf\t%lf\n",genloadsum, genloadsum_pop, genloadsum_pop_fixed);
 	}
 	if (sfs_outFlag==1){
-	for (i=0; i<(n-1); i++)
+	for (i=0; i <= n; i++)
 	{
-		fprintf(SFS_OUT,"%d\t",sfs[i]);
+        if (sfs[i] > 0){
+		fprintf(SFS_OUT,"%d/%d\t", i, sfs[i]);
+        }
 	}
 	fprintf(SFS_OUT, "\n");
+    
+    for (i=0; i <= CurrentNe; i++)
+    {
+        if (popsfs[i] > 0){
+        fprintf(POPSFS_OUT,"%d/%d\t", i, popsfs[i]);
+        }
+    }
+        fprintf(POPSFS_OUT, "\n");
 	}
 	
 }
