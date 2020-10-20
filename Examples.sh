@@ -35,6 +35,10 @@ time GSL_RNG_SEED=$RandomSeed GSL_RNG_TYPE=mrg ./PReFerSim ParameterFile9.txt 9
 ## 10) This is similar to 9), but here we relax the selection coefficients in a different way as defined by the parameter RelaxationSelectionType.
 time GSL_RNG_SEED=$RandomSeed GSL_RNG_TYPE=mrg ./PReFerSim ParameterFile10.txt 10
 
+## 11) Printing SFSs across time
+time GSL_RNG_SEED=$RandomSeed GSL_RNG_TYPE=mrg ./PReFerSim ParameterFile11.txt 11
+
+
 ###################################################### 11)
 
 ## Here is an example of how to run PReFerSim to print allele frequencies when you condition on present-day POPULATION allele frequencies.

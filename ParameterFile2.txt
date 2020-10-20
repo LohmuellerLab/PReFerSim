@@ -1,4 +1,4 @@
-MutationRate: 8
+MutationRate: 800
 DFEType: gamma
 DFEParameterOne: 0.184
 DFEParameterTwo: 319.8626

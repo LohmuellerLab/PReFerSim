@@ -2168,7 +2168,7 @@ char file_out_maf[1000];
 	
 	//now create sfs output
 	FILE *SFS_OUT, *POPSFS_OUT;
-	if (sfs_outFlag == 1){
+	if (sfs_outFlag >= 1){
 		char file_out_sfs[1000];
 		sprintf(file_out_sfs, "%s.%d.sfs_out.txt",OutputFilePrefix,num);
 		SFS_OUT = fopen(file_out_sfs, "w"); //output file for sfs stuff
@@ -2857,16 +2857,16 @@ void short_output(struct linked_list *head_ptr, FILE *S_OUT, FILE *NUM_SNP_OUT, 
 
 {
 
-	int num_snp_count=0;
-	double sum_s=0, sum_s_pop = 0, sum_s_pop_fixed = 0;
-	double freq_weight_s=0, freq_weight_s_pop = 0, freq_weight_s_pop_fixed = 0;
+	int num_snp_count=0, num_snp_count_pop=0;
+	double sum_s=0, sum_s_fixed = 0, sum_s_pop = 0, sum_s_pop_fixed = 0;
+	double freq_weight_s=0, freq_weight_s_fixed=0, freq_weight_s_pop = 0, freq_weight_s_pop_fixed = 0;
 	double c=0;
 	double y=0;
 	double t=0;
-	double total_maf=0, total_maf_pop=0, total_maf_pop_fixed=0;
+	double total_maf=0, total_maf_fixed = 0, total_maf_pop=0, total_maf_pop_fixed=0;
 	int samp_count;
 	double samp_freq;
-	double genloadsum = 0, genloadsum_pop = 0, genloadsum_pop_fixed = 0;
+	double genloadsum = 0, genloadsum_fixed = 0, genloadsum_pop = 0, genloadsum_pop_fixed = 0;
 	double pop_freq, s, h, s_to_print;
 	int sfs[n+1], popsfs[CurrentNe+1];
 	int i;
@@ -2883,7 +2883,10 @@ void short_output(struct linked_list *head_ptr, FILE *S_OUT, FILE *NUM_SNP_OUT, 
     }
     popsfs[0] = CountTotalReferenceAlleles;
     popsfs[CurrentNe] = CountTotalDerivedAlleles;
+    sfs[0] = CountTotalReferenceAlleles;
+    sfs[n] = CountTotalDerivedAlleles;
 
+//    printf("Here");
       struct linked_list *current_ptr;
       current_ptr = head_ptr;
      
@@ -2948,33 +2951,42 @@ void short_output(struct linked_list *head_ptr, FILE *S_OUT, FILE *NUM_SNP_OUT, 
         {
             num_snp_count++;
         }
-
-
+        if(pop_freq > 0.0 && pop_freq < 1.0)
+        {
+            num_snp_count_pop++;
+        }
  current_ptr = current_ptr ->next_ptr;
 	}
     total_maf_pop_fixed = total_maf_pop + CountTotalDerivedAlleles;
+    total_maf_fixed = total_maf + CountTotalDerivedAlleles;
     sum_s_pop_fixed = sum_s_pop + sumtotalfixeds;
+    sum_s_fixed = sum_s + sumtotalfixeds;
     genloadsum_pop_fixed = genloadsum_pop + sumtotalfixeds;
+    genloadsum_fixed = genloadsum + sumtotalfixeds;
 	//loop thorugh all snps, only print out one set of numbers for a particular time pooint
 	genloadsum = 1 - exp(-genloadsum);
+    genloadsum_pop = 1 - exp(-genloadsum_pop);
     genloadsum_pop_fixed = 1 - exp(-genloadsum_pop_fixed);
+    genloadsum_fixed = 1 - exp(-genloadsum_fixed);
     freq_weight_s_pop_fixed = freq_weight_s_pop + sumtotalfixeds;
+    freq_weight_s_fixed = freq_weight_s + sumtotalfixeds;
+    
 	
 //	num_snpFlag = 0, s_outFlag = 0, average_mafFlag = 0, s_weightFlag = 0, genloadFlag = 0, sfs_outFlag = 0, het_outFlag = 0, full_outFlag = 0, fixed_sitesFlag = 0 ; 
 	if (s_outFlag==1){
-	fprintf(S_OUT, "%lf\t%lf\t%lf\t%lf\n",sum_s, sum_s_pop, sum_s_pop_fixed,sumtotalfixeds);
+	fprintf(S_OUT, "%lf\t%lf\t%lf\t%lf\n",sum_s, sum_s_fixed, sum_s_pop, sum_s_pop_fixed);
 	}
 	if(num_snpFlag==1){
-	fprintf(NUM_SNP_OUT, "%d\n",num_snp_count);
+	fprintf(NUM_SNP_OUT, "%d\t%d\n",num_snp_count, num_snp_count_pop);
 	}
 	if(s_weightFlag==1){
-	fprintf(WEIGHT_S_OUT, "%lf\t%lf\t%lf\n",freq_weight_s, freq_weight_s_pop,freq_weight_s_pop_fixed);
+	fprintf(WEIGHT_S_OUT, "%lf\t%lf\t%lf\t%lf\n",freq_weight_s, freq_weight_s_fixed, freq_weight_s_pop, freq_weight_s_pop_fixed);
 	}
 	if(average_mafFlag==1){
-	fprintf(MAF_OUT, "%lf\t%lf\t%lf\n",total_maf, total_maf_pop, total_maf_pop_fixed);
+	fprintf(MAF_OUT, "%lf\t%lf\t%lf\t%lf\n",total_maf, total_maf_fixed, total_maf_pop, total_maf_pop_fixed);
 	}
 	if (genloadFlag==1) {
-	fprintf(GEN_LOAD, "%lf\t%lf\t%lf\n",genloadsum, genloadsum_pop, genloadsum_pop_fixed);
+	fprintf(GEN_LOAD, "%lf\t%lf\t%lf\t%lf\n",genloadsum, genloadsum_fixed, genloadsum_pop, genloadsum_pop_fixed);
 	}
 	if (sfs_outFlag==1){
 	for (i=0; i <= n; i++)

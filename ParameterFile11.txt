@@ -1,7 +1,9 @@
-MutationRate: 20
-DFEType: point
-DFEPointSelectionCoefficient: 0.0
-DemographicHistory: Bottleneck.txt
+MutationRate: 8
+DFEType: gamma
+DFEParameterOne: 0.184
+DFEParameterTwo: 319.8626
+DFEParameterThree: 1000
+DemographicHistory: DemographicHistoryBreedDogs1000.txt
 PrintSNPNumber: 1
 PrintSumOfS: 1
 PrintSumDAF: 1
@@ -10,5 +12,5 @@ PrintGenLoad: 1
 PrintFixedSites: 1
 PrintSegSiteInfo: 1
 PrintSampledGenotypes: 1
-PrintSFS: 1
+PrintSFS: 2
 FilePrefix: MiniTest/Output
