@@ -1,4 +1,4 @@
-MutationRate: 800
+MutationRate: 80
 DFEType: gamma
 DFEParameterOne: 0.184
 DFEParameterTwo: 319.8626
@@ -12,5 +12,5 @@ PrintGenLoad: 1
 PrintFixedSites: 1
 PrintSegSiteInfo: 1
 PrintSampledGenotypes: 1
-PrintSFS: 1
+PrintSFS: 0
 FilePrefix: MiniTest/Output
